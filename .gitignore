@@ -1,0 +1,6 @@
+files/
+*.o
+md5
+slave
+view
+*.json
