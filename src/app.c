@@ -49,6 +49,8 @@ int main(int argc, char * argv[], char * envp[]) {
 
     int slavePids[SLAVE_AMOUNT];
 
+    int fds[SLAVE_AMOUNT * 2];
+
     for (int i = 0 ; i < SLAVE_AMOUNT ; i++) {
         char * slaveFiles[filesPerSlave + 1];
         if (filesSent < filesToSlaves) { // We check this in case filesPerSlave was 0
@@ -60,15 +62,40 @@ int main(int argc, char * argv[], char * envp[]) {
             slaveFiles[0] = NULL;
         }
 
+        int readfd[2];
+        if (pipe(readfd) != 0) {
+            perror("Error while creating pipe");
+            return 1;
+        }
+        int writefd[2];
+        if (pipe(writefd) != 0) {
+            perror("Error while creating pipe");
+            return 1;
+        }
+        fds[2 * i] = readfd[0]; // read end of the pipe
+        fds[2 * i + 1] = writefd[1]; // write end of the pipe
+
         int pid = fork();
         if (pid < 0) {
             perror("Error while creating slave");
             return 1;
         } else if (pid == 0) {
             // Child
+
+            close(0); // stdin
+            dup(writefd[0]); // read end of where app writes
+            close(writefd[0]);
+            close(1); // stdout
+            dup(readfd[1]); // write end of where app reads
+            close(readfd[1]);
+
             execve("slave", slaveFiles, envp);
         } else {
             // Father
+
+            close(writefd[0]);
+            close(readfd[1]);
+
             slavePids[i] = pid;
         }
     }
