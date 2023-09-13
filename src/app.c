@@ -66,7 +66,7 @@ int main(int argc, char * argv[], char * envp[]) {
             close(writefds[READ_END]);
             close(readfds[WRITE_END]);
 
-            execve("slave", NULL, NULL);
+            execl("slave", "slave", (char *) NULL);
         } else {
             // Father
             close(writefds[READ_END]);

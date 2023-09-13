@@ -6,6 +6,7 @@ int createPipe(int fildes[2]) {
         perror("Error while creating pipe");
         exit(EXIT_FAILURE);
     }
+    return ret;
 }
 
 int createFork() {

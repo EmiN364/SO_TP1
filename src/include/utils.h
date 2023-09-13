@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/select.h>
+#include <stdio.h>
 
 int createPipe(int fildes[2]);
 int createFork();
