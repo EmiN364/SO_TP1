@@ -1,14 +1,8 @@
-#include <sys/types.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <sys/stat.h>
-#include <sys/select.h>
-#include <fcntl.h>
-
-#define SLAVE_AMOUNT 5
+#include <app.h>
 
 int main(int argc, char * argv[], char * envp[]) {
-    printf("Cant args: %d\n", argc);
+    
+    // Disable buffering
     setvbuf(stdout, NULL, _IONBF, 0);
 
     char * files[argc - 1];
@@ -16,17 +10,16 @@ int main(int argc, char * argv[], char * envp[]) {
 
     struct stat fileData;
     for (int i = 1; i < argc; i++) {
-        //printf("Arg %d: %s\n", i, argv[i]);
         stat(argv[i], &fileData);
-        //printf("Mode: %s \n", S_ISREG(fileData.st_mode) ? "File" : "Not file");
         
+        // We check if is a common file
         if (S_ISREG(fileData.st_mode)) {
             files[countFiles++] = argv[i];
         }
     }
 
-    printf("Cant Files: %d\n", countFiles);
-/*     for (int i = 0; i < countFiles; i++) {
+    /* printf("Cant Files: %d\n", countFiles);
+    for (int i = 0; i < countFiles; i++) {
         printf("File %d: %s\n", i, files[i]);
     } */
 
@@ -53,56 +46,40 @@ int main(int argc, char * argv[], char * envp[]) {
     int filesSent = 0;
     int filesProcessed = 0;
 
-    int slavePids[SLAVE_AMOUNT];
-
-    int fds[SLAVE_AMOUNT * 2];
+    Slave slaves[SLAVE_AMOUNT];
 
     for (int i = 0 ; i < SLAVE_AMOUNT ; i++) {
-        char * slaveFiles[filesPerSlave + 2];
-        slaveFiles[0] = "slave";
-        if (filesSent < filesToSlaves) { // We check this in case filesPerSlave was 0
-            for (int j = 1; j < filesPerSlave + 1; j++)
-                slaveFiles[j] = files[filesSent++];
 
-            slaveFiles[filesPerSlave + 1] = NULL;
-        } else {
-            slaveFiles[0] = NULL;
-        }
+        int readfds[2];
+        int writefds[2];
 
-        int readfd[2];
-        if (pipe(readfd) != 0) {
-            perror("Error while creating pipe");
-            return 1;
-        }
-        int writefd[2];
-        if (pipe(writefd) != 0) {
-            perror("Error while creating pipe");
-            return 1;
-        }
-        fds[2 * i] = readfd[0]; // read end of the pipe
-        fds[2 * i + 1] = writefd[1]; // write end of the pipe
+        createPipe(readfds);
+        createPipe(writefds);
 
-        int pid = fork();
-        if (pid < 0) {
-            perror("Error while creating slave");
-            return 1;
-        } else if (pid == 0) {
+        int pid = createFork();
+        if (pid == 0) {
             // Child
+            close(STDIN_FILENO);
+            dup(writefds[READ_END]); // read end of where app writes
+            close(STDOUT_FILENO);
+            dup(readfds[WRITE_END]); // write end of where app reads
+            close(writefds[READ_END]);
+            close(readfds[WRITE_END]);
 
-            close(0); // stdin
-            dup(writefd[0]); // read end of where app writes
-            close(1); // stdout
-            dup(readfd[1]); // write end of where app reads
-            close(writefd[0]);
-            close(readfd[1]);
-
-            execve("slave", slaveFiles, envp);
+            execve("slave", NULL, NULL);
         } else {
             // Father
-            close(writefd[0]);
-            close(readfd[1]);
+            close(writefds[READ_END]);
+            close(readfds[WRITE_END]);
 
-            slavePids[i] = pid;
+            slaves[i].readfd = readfds[READ_END];
+            slaves[i].writefd = writefds[WRITE_END];
+            slaves[i].pid = pid;
+
+            if (filesSent < filesToSlaves) { // We check this in case filesPerSlave was 0
+                for (int j = 0; j < filesPerSlave; j++)
+                    write(slaves[i].writefd, files[filesSent++], sizeof (char *));
+            }
         }
     }
 
@@ -115,36 +92,24 @@ int main(int argc, char * argv[], char * envp[]) {
         int nfds = 0;
 
         for (int i = 0; i < SLAVE_AMOUNT; i++) {
-            FD_SET(fds[i*2], &readfds);
+            FD_SET(slaves[i].readfd, &readfds);
 
-            if (fds[i*2] >= nfds) nfds = fds[i*2] + 1;
+            if (slaves[i].readfd >= nfds) nfds = slaves[i].readfd + 1;
         }
 
-        if (select(nfds, &readfds, NULL, NULL, NULL) < 0) {
-            perror("Error while doing select in app");
-            return 1;
-        }
+        rSelect(nfds, &readfds);
 
         for (int i = 0; i < SLAVE_AMOUNT; i++) {
-            if (FD_ISSET(fds[i*2], &readfds)) {
+            if (FD_ISSET(slaves[i].readfd, &readfds)) {
                 // There is new hash to add to output
                 char buff[128];
-                int len = read(fds[i*2], buff, 128);
-                if (len < 0) {
-                    perror("Error while reading fd in app");
-                    return 1;
-                }
+                int len = readFd(slaves[i].readfd, buff, 128);
 
                 printf("Writing 1\n");
-                if (write(outputFile, buff, len) < 0) {
-                    perror("Error while writing 1 in app");
-                    return 1;
-                }
+                writeFd(outputFile, buff, len);
                 printf("Writing mid\n");
-                if ((filesProcessed + 1) < countFiles && write(fds[2*i + 1], files[filesSent], sizeof (char *)) < 0) {
-                    perror("Error while writing 2 in app");
-                    return 1;
-                }
+                if ((filesProcessed + 1) < countFiles)
+                    writeFd(slaves[i].writefd, files[filesSent], sizeof (char *));
                 filesSent++;
                 printf("Writing 2\n");
             }
