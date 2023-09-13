@@ -41,13 +41,13 @@ int main(int argc, char * argv[]) {
             printf("Slave ended");
             exit(0);
         }
-        if (fileName != NULL) {
-            char rta[128];
-            dprintf(2, "Processing: %s\n", fileName);
-            processInitialFile(fileName, rta);
-            printf("%d:\t%s", myPid, rta);
-            // write(1, rta, 128);
-        }
+        
+        char rta[128];
+        dprintf(2, "Processing: %s\n", fileName);
+        processInitialFile(fileName, rta);
+        printf("%d:\t%s", myPid, rta);
+        // write(1, rta, 128);
+        
     }
 }
 
@@ -76,7 +76,7 @@ void processInitialFile(char * file, char buff[]) {
         args[2] = NULL;
 
         execvp("md5sum", args);
-        perror("Errir while calling md5sum");
+        perror("Error while calling md5sum");
         exit(1);        
     } else {
         int stat;

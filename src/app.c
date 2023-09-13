@@ -104,17 +104,24 @@ int main(int argc, char * argv[], char * envp[]) {
                 // There is new hash to add to output
                 char buff[128];
                 int len = readFd(slaves[i].readfd, buff, 128);
+                filesProcessed++;
 
                 printf("Writing 1\n");
                 writeFd(outputFile, buff, len);
                 printf("Writing mid\n");
-                if ((filesProcessed + 1) < countFiles)
-                    writeFd(slaves[i].writefd, files[filesSent], sizeof (char *));
-                filesSent++;
+                if (filesSent < countFiles) {
+                    writeFd(slaves[i].writefd, files[filesSent++], sizeof (char *));
+                }
+
                 printf("Writing 2\n");
             }
         }
-
-        filesProcessed++;
     }
+
+    for (int i = 0; i < SLAVE_AMOUNT; i++) {
+        close(slaves[i].readfd);
+        close(slaves[i].writefd);
+    }
+
+    close(outputFile);
 }

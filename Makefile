@@ -1,8 +1,8 @@
 COMPILER = gcc
 OUTPUT_FILE = md5
 OUTPUT_FILE_SLAVE = slave
-CFLAGS = -Wall -fsanitize=address -g
-DEBUG_COMPILER = -Wall
+CFLAGS = -Wall
+DEBUG_COMPILER = -Wall -fsanitize=address -g
 
 all: app slave
 	rm *.o
