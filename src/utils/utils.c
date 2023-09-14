@@ -44,3 +44,12 @@ ssize_t writeFd(int fildes, const void *buf, size_t nbyte) {
     }
     return r;
 }
+
+int openFile(const char *pathname, int flags, mode_t mode) {
+    int r = open(pathname, flags, mode);
+    if (r < 0) {
+        perror("Error while creating output file");
+        exit(1);
+    }
+    return r;
+}
