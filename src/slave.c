@@ -4,10 +4,9 @@
 #include <sys/wait.h>
 #include <utils.h>
 
-void processInitialFile(char * file, char buff[]);
+void processFile(char * file, char buff[]);
 
 int main(int argc, char * argv[]) {
-
     // Turning off print buffering
     setvbuf(stdout, NULL, _IONBF, 0);
     
@@ -19,16 +18,21 @@ int main(int argc, char * argv[]) {
         if (r == 0) {
             exit(0);
         }
-        fileName[r] = 0;
-        
-        char rta[128];
-        // dprintf(2, "Processing: %s\n", fileName);
-        processInitialFile(fileName, rta);
-        printf("%d:\t%s", myPid, rta);
+
+        int last = 0;
+        for (int i = 0; i < r; i++) {
+            if (fileName[i] == 0) {
+                char rta[128];
+                // dprintf(2, "Processing: %s\n", fileName + last);
+                processFile(fileName + last, rta);
+                printf("%d:\t%s", myPid, rta);
+                last = i + 1;
+            }
+        }
     }
 }
 
-void processInitialFile(char * file, char buff[]) {
+void processFile(char * file, char buff[]) {
     int pipefds[2];
 
     createPipe(pipefds);
@@ -51,9 +55,9 @@ void processInitialFile(char * file, char buff[]) {
             perror("Error while doing md5 in slave");
             exit(1);
         }
-        int r = readFd(pipefds[0], buff, 128);
+        int r = readFd(pipefds[READ_END], buff, 128);
         buff[r] = 0;
-        close(pipefds[0]);
-        close(pipefds[1]);
+        close(pipefds[READ_END]);
+        close(pipefds[WRITE_END]);
     }
 }

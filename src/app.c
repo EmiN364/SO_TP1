@@ -18,21 +18,12 @@ int main(int argc, char * argv[], char * envp[]) {
         }
     }
 
-    /* printf("Cant Files: %d\n", countFiles);
-    for (int i = 0; i < countFiles; i++) {
-        printf("File %d: %s\n", i, files[i]);
-    } */
-
     if (countFiles < 1) {
         puts("No files to process");
         return 0;
     }
 
-    int outputFile = open("output.txt", O_CREAT|O_RDWR, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-    if (outputFile < 0) {
-        perror("Error while creating output file");
-        return 1;
-    }
+    int outputFile = openFile("output.txt", O_CREAT|O_RDWR, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 
     int filesToSlaves = countFiles * 0.1;
     if (filesToSlaves == 0) filesToSlaves = 1;
@@ -63,8 +54,10 @@ int main(int argc, char * argv[], char * envp[]) {
             dup(writefds[READ_END]); // read end of where app writes
             close(STDOUT_FILENO);
             dup(readfds[WRITE_END]); // write end of where app reads
-            close(writefds[READ_END]);
+            close(readfds[READ_END]);
             close(readfds[WRITE_END]);
+            close(writefds[READ_END]);
+            close(writefds[WRITE_END]);
 
             execl("slave", "slave", (char *) NULL);
         } else {
@@ -80,7 +73,8 @@ int main(int argc, char * argv[], char * envp[]) {
 
             if (filesSent < filesToSlaves) { // We check this in case filesPerSlave was 0
                 for (int j = 0; j < filesPerSlave; j++) {
-                    write(slaves[i].writefd, files[filesSent++], sizeof (char *));
+                    write(slaves[i].writefd, files[filesSent], strlen(files[filesSent]) + 1);
+                    filesSent++;
                     slaves[i].filesSent++;
                 }
             }
@@ -90,7 +84,7 @@ int main(int argc, char * argv[], char * envp[]) {
     fd_set readfds;
 
     while (filesProcessed < countFiles) {
-        printf("Files processed: %d\n", filesProcessed);
+        // printf("Files processed: %d\n", filesProcessed);
 
         FD_ZERO(&readfds);
         int nfds = 0;
@@ -115,7 +109,8 @@ int main(int argc, char * argv[], char * envp[]) {
                 writeFd(outputFile, buff, len);
 
                 if (filesSent < countFiles && slaves[i].filesSent <= slaves[i].filesProcessed) {
-                    writeFd(slaves[i].writefd, files[filesSent++], sizeof (char *));
+                    writeFd(slaves[i].writefd, files[filesSent], strlen(files[filesSent]) + 1);
+                    filesSent++;
                     slaves[i].filesSent++;
                 }
             }
