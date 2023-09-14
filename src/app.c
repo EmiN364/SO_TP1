@@ -75,10 +75,14 @@ int main(int argc, char * argv[], char * envp[]) {
             slaves[i].readfd = readfds[READ_END];
             slaves[i].writefd = writefds[WRITE_END];
             slaves[i].pid = pid;
+            slaves[i].filesProcessed = 0;
+            slaves[i].filesSent = 0;
 
             if (filesSent < filesToSlaves) { // We check this in case filesPerSlave was 0
-                for (int j = 0; j < filesPerSlave; j++)
+                for (int j = 0; j < filesPerSlave; j++) {
                     write(slaves[i].writefd, files[filesSent++], sizeof (char *));
+                    slaves[i].filesSent++;
+                }
             }
         }
     }
@@ -102,18 +106,18 @@ int main(int argc, char * argv[], char * envp[]) {
         for (int i = 0; i < SLAVE_AMOUNT; i++) {
             if (FD_ISSET(slaves[i].readfd, &readfds)) {
                 // There is new hash to add to output
-                char buff[128];
-                int len = readFd(slaves[i].readfd, buff, 128);
-                filesProcessed++;
+                char buff[1024];
+                int len = readFd(slaves[i].readfd, buff, 1023);
+                int fp = analyzeRead(buff, len);
+                filesProcessed += fp;
+                slaves[i].filesProcessed += fp;
 
-                printf("Writing 1\n");
                 writeFd(outputFile, buff, len);
-                printf("Writing mid\n");
-                if (filesSent < countFiles) {
-                    writeFd(slaves[i].writefd, files[filesSent++], sizeof (char *));
-                }
 
-                printf("Writing 2\n");
+                if (filesSent < countFiles && slaves[i].filesSent <= slaves[i].filesProcessed) {
+                    writeFd(slaves[i].writefd, files[filesSent++], sizeof (char *));
+                    slaves[i].filesSent++;
+                }
             }
         }
     }
@@ -124,4 +128,13 @@ int main(int argc, char * argv[], char * envp[]) {
     }
 
     close(outputFile);
+}
+
+int analyzeRead(char * buff, int len) {
+    int files = 0;
+    for (int i = 0; i < len; i++) {
+        if (buff[i] == '\n')
+            files++;
+    }
+    return files;
 }

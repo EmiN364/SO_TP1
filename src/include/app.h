@@ -16,5 +16,4 @@ typedef struct Slave {
 
 #define SLAVE_AMOUNT 5
 
-#define READ_END 0
-#define WRITE_END 1
+int analyzeRead(char * buff, int len);

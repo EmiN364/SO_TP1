@@ -13,11 +13,14 @@ app: app.o utils.o
 app.o:
 	$(COMPILER) -I./src/include src/app.c -c $(CFLAGS)
 
+slave: slave.o utils.o
+	$(COMPILER) -I./src/include slave.o utils.o $(CFLAGS) -o $(OUTPUT_FILE_SLAVE)
+
+slave.o:
+	$(COMPILER) -I./src/include src/slave.c -c $(CFLAGS)
+
 utils.o:
 	$(COMPILER) -I./src/include src/utils/utils.c -c $(CFLAGS)
-
-slave: src/slave.c
-	$(COMPILER) -I./src/include src/slave.c $(CFLAGS) -o $(OUTPUT_FILE_SLAVE)
 
 debug: CFLAGS=$(DEBUG_COMPILER)
 debug: all
