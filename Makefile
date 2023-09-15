@@ -26,4 +26,4 @@ debug: CFLAGS=$(DEBUG_COMPILER)
 debug: all
 
 clean:
-	rm -r $(OUTPUT_FILE) $(OUTPUT_FILE_SLAVE) *.o
+	rm $(OUTPUT_FILE) $(OUTPUT_FILE_SLAVE) *.o
