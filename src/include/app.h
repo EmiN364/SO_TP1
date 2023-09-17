@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <utils.h>
+#include <shmAdt.h>
 
 typedef struct Slave {
     pid_t pid;

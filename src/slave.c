@@ -18,7 +18,7 @@ int main(int argc, char * argv[]) {
         char fileName[256];
         int r = readFd(STDIN_FILENO, fileName, 255);
         if (r == 0) {
-            exit(0);
+            exit(EXIT_SUCCESS);
         }
 
         int last = 0;
@@ -49,13 +49,13 @@ void processFile(char * file, char buff[]) {
 
         execlp("md5sum", "md5sum", file, NULL);
         perror("Error while calling md5sum");
-        exit(1);        
+        exit(EXIT_FAILURE);        
     } else {
         int stat;
         waitpid(pid, &stat, 0);
         if (stat != 0) {
             perror("Error while doing md5 in slave");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         int r = readFd(pipefds[READ_END], buff, 128);
         buff[r] = 0;

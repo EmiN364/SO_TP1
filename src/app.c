@@ -25,6 +25,11 @@ int main(int argc, char * argv[], char * envp[]) {
         return 0;
     }
 
+    shmAdt shm = newShm("shmTpe");
+    puts("shmTpe");
+
+    sleep(2);
+
     int outputFile = openFile("output.txt", O_CREAT|O_RDWR, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 
     int filesToSlaves = countFiles * 0.1;
@@ -107,8 +112,10 @@ int main(int argc, char * argv[], char * envp[]) {
                 int fp = analyzeRead(buff, len);
                 filesProcessed += fp;
                 slaves[i].filesProcessed += fp;
+                buff[len] = 0;
 
                 writeFd(outputFile, buff, len);
+                writeShm(shm, buff, len);
 
                 if (filesSent < countFiles && slaves[i].filesSent <= slaves[i].filesProcessed) {
                     writeFd(slaves[i].writefd, files[filesSent], strlen(files[filesSent]) + 1);
@@ -119,12 +126,15 @@ int main(int argc, char * argv[], char * envp[]) {
         }
     }
 
+    writeShm(shm, "", 0); // send signal to view, that app ended
+
     for (int i = 0; i < SLAVE_AMOUNT; i++) {
         close(slaves[i].readfd);
         close(slaves[i].writefd);
     }
 
     close(outputFile);
+    closeShm(shm);
 }
 
 int analyzeRead(char * buff, int len) {
