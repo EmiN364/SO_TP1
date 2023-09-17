@@ -12,5 +12,7 @@ typedef struct Slave {
 } Slave;
 
 #define SLAVE_AMOUNT 5
+#define FD_AMOUNT 2
+#define BUFF_SIZE 1024
 
 int analyzeRead(char * buff, int len);

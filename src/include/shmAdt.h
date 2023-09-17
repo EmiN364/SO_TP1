@@ -8,7 +8,8 @@
 #include <sys/types.h>
 #include <stdio.h>
 
-#define BUF_SIZE 10240
+#define SHM_BUFF_SIZE 2048
+#define SHM_NAME_SIZE 10
 
 typedef struct shmCdt * shmAdt;
 

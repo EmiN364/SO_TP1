@@ -9,9 +9,9 @@ int main(int argc, char * argv[]) {
     // Disable buffering
     setvbuf(stdout, NULL, _IONBF, 0);
 
-    char shmName[10];
+    char shmName[SHM_NAME_SIZE];
     if (argc > 1) {
-        strncpy(shmName, argv[1], 9);
+        strncpy(shmName, argv[1], SHM_NAME_SIZE - 1);
     } else {
         scanf("%9s", shmName);
     }

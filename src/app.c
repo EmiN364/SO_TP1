@@ -48,8 +48,8 @@ int main(int argc, char * argv[], char * envp[]) {
 
     for (int i = 0 ; i < SLAVE_AMOUNT ; i++) {
 
-        int readfds[2];
-        int writefds[2];
+        int readfds[FD_AMOUNT];
+        int writefds[FD_AMOUNT];
 
         createPipe(readfds);
         createPipe(writefds);
@@ -107,8 +107,8 @@ int main(int argc, char * argv[], char * envp[]) {
         for (int i = 0; i < SLAVE_AMOUNT; i++) {
             if (FD_ISSET(slaves[i].readfd, &readfds)) {
                 // There is new hash to add to output
-                char buff[1024];
-                int len = readFd(slaves[i].readfd, buff, 1023);
+                char buff[BUFF_SIZE];
+                int len = readFd(slaves[i].readfd, buff, BUFF_SIZE - 1);
                 int fp = analyzeRead(buff, len);
                 filesProcessed += fp;
                 slaves[i].filesProcessed += fp;

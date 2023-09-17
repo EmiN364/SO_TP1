@@ -3,8 +3,8 @@
 #include <shmAdt.h>
 
 struct shmCdt {
-    char   name[10];
-    char   buf[BUF_SIZE];   /* Data being transferred */
+    char   name[SHM_NAME_SIZE];
+    char   buf[SHM_BUFF_SIZE];   /* Data being transferred */
     sem_t  sem;            /* POSIX unnamed semaphore */
     size_t readIndex;
     size_t writeIndex;
@@ -47,7 +47,7 @@ shmAdt newShm(const char *name/* , int oflag, mode_t mode */) {
 }
 
 void deleteShm(shmAdt shmp) {
-    char shmpName[10];
+    char shmpName[SHM_NAME_SIZE];
     strcpy(shmpName, shmp->name);
 
     if (sem_destroy(&shmp->sem) == -1) {
@@ -97,12 +97,12 @@ int closeShm(shmAdt shmp) {
 }
 
 void writeShm(shmAdt shmp, char * string, size_t len) {
-    if (len > BUF_SIZE) {
+    if (len > SHM_BUFF_SIZE) {
         perror("String is too long\n");
         exit(EXIT_FAILURE);
     }
 
-    if (shmp->writeIndex + len > BUF_SIZE) {
+    if (shmp->writeIndex + len > SHM_BUFF_SIZE) {
         perror("Buffer is full\n");
         exit(EXIT_FAILURE);
     }
@@ -129,12 +129,10 @@ void readShm(shmAdt shmp, char * buff) {
         perror("Error while doing sem_wait");
         exit(EXIT_FAILURE);
     }
-    
-    /* int i;
-    for (i = 0; shmp->buf[shmp->readIndex + i]; i++) {
-        buff[i] = shmp->buf[shmp->readIndex + i];
-    }
-    buff[i] = '\0';
-    shmp->readIndex += i+1; */
+   
     shmp->readIndex += sprintf(buff, "%s", &(shmp->buf[shmp->readIndex])) + 1;
+    if (shmp->readIndex >= shmp->writeIndex) {
+        shmp->readIndex = 0;
+        shmp->writeIndex = 0;
+    }
 }

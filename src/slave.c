@@ -1,10 +1,6 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <sys/wait.h>
-#include <utils.h>
+#include <slave.h>
 
 void processFile(char * file, char buff[]);
 
@@ -15,8 +11,8 @@ int main(int argc, char * argv[]) {
     int myPid = getpid();
 
     while (1) {
-        char fileName[256];
-        int r = readFd(STDIN_FILENO, fileName, 255);
+        char fileName[FILE_NAME_SIZE];
+        int r = readFd(STDIN_FILENO, fileName, FILE_NAME_SIZE - 1);
         if (r == 0) {
             exit(EXIT_SUCCESS);
         }
