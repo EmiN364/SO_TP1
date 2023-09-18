@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #include <stdio.h>
 
-#define SHM_BUFF_SIZE 4096
+#define SHM_BUFF_SIZE 8192
 #define SHM_NAME_SIZE 10
 
 typedef struct shmCdt * shmAdt;
