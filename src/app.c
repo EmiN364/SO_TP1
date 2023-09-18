@@ -28,25 +28,23 @@ int main(int argc, char * argv[], char * envp[]) {
     shmAdt shm = newShm("shmTpe");
     puts("shmTpe");
 
-    sleep(2);
+    sleep(2); // Wait for view to appear
 
     int outputFile = openFile("output.txt", O_CREAT|O_RDWR, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 
     int filesToSlaves = countFiles * 0.1;
     if (filesToSlaves == 0) filesToSlaves = 1;
-    // printf("filesToSlaves: %d\n", filesToSlaves);
 
-    int filesPerSlave = filesToSlaves / SLAVE_AMOUNT; 
+    int slaveAmount = filesToSlaves > SLAVE_MAX_AMOUNT ? SLAVE_MAX_AMOUNT : filesToSlaves;
+
+    int filesPerSlave = filesToSlaves / slaveAmount; 
     if (filesPerSlave == 0) filesPerSlave = 1;
-    // printf("filesPerSlave: %d\n", filesPerSlave);
-    // TODO: Ver caso si es 0
 
-    int filesSent = 0;
-    int filesProcessed = 0;
+    int filesSent = 0, filesProcessed = 0;
 
-    Slave slaves[SLAVE_AMOUNT];
+    Slave slaves[slaveAmount];
 
-    for (int i = 0 ; i < SLAVE_AMOUNT ; i++) {
+    for (int i = 0 ; i < slaveAmount ; i++) {
 
         int readfds[FD_AMOUNT];
         int writefds[FD_AMOUNT];
@@ -78,7 +76,7 @@ int main(int argc, char * argv[], char * envp[]) {
             slaves[i].filesProcessed = 0;
             slaves[i].filesSent = 0;
 
-            if (filesSent < filesToSlaves) { // We check this in case filesPerSlave was 0
+            if (filesSent < filesToSlaves) {
                 for (int j = 0; j < filesPerSlave; j++) {
                     write(slaves[i].writefd, files[filesSent], strlen(files[filesSent]) + 1);
                     filesSent++;
@@ -91,12 +89,11 @@ int main(int argc, char * argv[], char * envp[]) {
     fd_set readfds;
 
     while (filesProcessed < countFiles) {
-        // printf("Files processed: %d\n", filesProcessed);
 
         FD_ZERO(&readfds);
         int nfds = 0;
 
-        for (int i = 0; i < SLAVE_AMOUNT; i++) {
+        for (int i = 0; i < slaveAmount; i++) {
             FD_SET(slaves[i].readfd, &readfds);
 
             if (slaves[i].readfd >= nfds) nfds = slaves[i].readfd + 1;
@@ -104,7 +101,7 @@ int main(int argc, char * argv[], char * envp[]) {
 
         rSelect(nfds, &readfds);
 
-        for (int i = 0; i < SLAVE_AMOUNT; i++) {
+        for (int i = 0; i < slaveAmount; i++) {
             if (FD_ISSET(slaves[i].readfd, &readfds)) {
                 // There is new hash to add to output
                 char buff[BUFF_SIZE];
@@ -128,7 +125,7 @@ int main(int argc, char * argv[], char * envp[]) {
 
     writeShm(shm, "", 0); // send signal to view, that app ended
 
-    for (int i = 0; i < SLAVE_AMOUNT; i++) {
+    for (int i = 0; i < slaveAmount; i++) {
         close(slaves[i].readfd);
         close(slaves[i].writefd);
     }

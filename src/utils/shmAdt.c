@@ -11,7 +11,7 @@ struct shmCdt {
 };
 
 shmAdt newShm(const char *name/* , int oflag, mode_t mode */) {
-    int fd = shm_open(name, O_CREAT | O_TRUNC | O_RDWR, 0600);
+    int fd = shm_open(name, O_CREAT | O_TRUNC | O_RDWR, S_IRUSR | S_IWUSR);
     if (fd < 0) {
         perror("Error while creating shared memory");
         exit(EXIT_FAILURE);

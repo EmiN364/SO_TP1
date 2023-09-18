@@ -1,11 +1,9 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
-#include <shmAdt.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <string.h>
+#include <view.h>
 
 int main(int argc, char * argv[]) {
+    
     // Disable buffering
     setvbuf(stdout, NULL, _IONBF, 0);
 
@@ -18,9 +16,9 @@ int main(int argc, char * argv[]) {
 
     shmAdt shm = connectShm(shmName);
 
-    char buff[1024];
+    char buff[SHM_BUFF_SIZE];
 
-    while (1) {
+    while (TRUE) {
         readShm(shm, buff);
         if (buff[0] == '\0') break;
         printf("%s", buff);

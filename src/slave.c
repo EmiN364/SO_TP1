@@ -5,12 +5,13 @@
 void processFile(char * file, char buff[]);
 
 int main(int argc, char * argv[]) {
+
     // Turning off print buffering
     setvbuf(stdout, NULL, _IONBF, 0);
     
     int myPid = getpid();
 
-    while (1) {
+    while (TRUE) {
         char fileName[FILE_NAME_SIZE];
         int r = readFd(STDIN_FILENO, fileName, FILE_NAME_SIZE - 1);
         if (r == 0) {
@@ -20,8 +21,7 @@ int main(int argc, char * argv[]) {
         int last = 0;
         for (int i = 0; i < r; i++) {
             if (fileName[i] == 0) {
-                char rta[128];
-                // dprintf(2, "Processing: %s\n", fileName + last);
+                char rta[MD5_ANS_SIZE];
                 processFile(fileName + last, rta);
                 printf("%d:\t%s", myPid, rta);
                 last = i + 1;
@@ -53,8 +53,8 @@ void processFile(char * file, char buff[]) {
             perror("Error while doing md5 in slave");
             exit(EXIT_FAILURE);
         }
-        int r = readFd(pipefds[READ_END], buff, 128);
-        buff[r] = 0;
+        int r = readFd(pipefds[READ_END], buff, MD5_ANS_SIZE - 1);
+        buff[r] = '\0';
         close(pipefds[READ_END]);
         close(pipefds[WRITE_END]);
     }
