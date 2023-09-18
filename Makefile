@@ -32,8 +32,29 @@ utils.o: src/utils/utils.c
 shmAdt.o: src/utils/shmAdt.c
 	$(COMPILER) -I./src/include src/utils/shmAdt.c -c $(CFLAGS)
 
+pvs:
+	pvs-studio-analyzer trace -- make
+	pvs-studio-analyzer analyze
+	plog-converter -a '64:1,2,3;GA:1,2,3;OP:1,2,3' -t tasklist -o report.tasks PVS-Studio.log
+
+cleanpvs:
+	rm -f strace_out PVS-Studio.log report.tasks
+
+valgrind: all
+	valgrind ./md5 files/* | ./view
+
+files:
+	mkdir -p test;
+	number=1 ; while [ "$$number" -le 60 ] ; do \
+        echo $$number > test/$$number ; \
+        number=`expr $$number + 1` ; \
+    done
+
+cleanFiles:
+	rm -rf test
+
 debug: CFLAGS=$(DEBUG_COMPILER)
 debug: all
 
 clean:
-	rm $(OUTPUT_FILE) $(OUTPUT_FILE_SLAVE) $(OUTPUT_FILE_VIEW) *.o
+	rm -f $(OUTPUT_FILE) $(OUTPUT_FILE_SLAVE) $(OUTPUT_FILE_VIEW) output.txt *.o
