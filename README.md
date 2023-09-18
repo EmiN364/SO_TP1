@@ -22,6 +22,7 @@ This consist of three processes (app.c, view.c, and slave.c).
     - [Case 2](#case-2)
     - [Case 3](#case-3)
   - [Results](#results)
+  - [MD5 of Project Files](#MD5-of-Project-Files)
 
 
 ## Project Structure
@@ -88,6 +89,15 @@ This program will output the shared memory name which *has to be used as argumen
 user@docker:~$ ./view <name1>
 ```
 
-
 ## Result
 The results are stored in <code>output.txt</code>
+
+## MD5 of Project Files
+Using this project, we calculated the MD% hashes of the files in the project. The results are the following:
+```
+2d77bcaa77283f5174f113ebbc5bae1e  src/app.c
+37a1c70a3cf6e125502e6ec7c11d482b  src/slave.c
+c98d9ffe35188fbecd991014cb3d8323  src/view.c
+cac5659c4ef17b0a0958a9d3f0627cb3  src/utils/shmAdt.c
+1f7a13e600583183d7fb1c9a3f1d91be  src/utils/utils.c
+```

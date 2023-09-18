@@ -9,6 +9,6 @@
 
 #define FILE_NAME_SIZE 100
 #define TRUE 1
-#define MD5_ANS_SIZE 50
+#define MD5_ANS_SIZE 80
 
 #endif
