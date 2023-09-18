@@ -1,18 +1,40 @@
 # SO_TP1
 System in C language which calculates md5 hashes of files using slaves.
-The OS consist of three processes (app.c, view.c, and slave.c).
+This consist of three processes (app.c, view.c, and slave.c).
+
+## Authors
+
+- Gonzalo Candisano (62.616)
+- Emilio Neme (62.601)
+- Theo Shlamovitz (62.087)
+
+## Content
+
+- [SO TP1](#so_tp1)
+  - [Authors](#authors)
+  - [Table Content](#content)
+  - [Project Structure](#project-structure)
+  - [Requirements](#requirements)
+  - [Compilation Instructions](#compilation-instructions)
+  - [MakeFile](#makefile)
+  - [Execution Instructions](#execution-instructions)
+    - [Case 1](#case-1)
+    - [Case 2](#case-2)
+    - [Case 3](#case-3)
+  - [Results](#results)
+
 
 ## Project Structure
 
-* app.c is the main process, it creates the slaves required in order to calculate all md5 hashes and it opens the shared memory required in order to communicate with the view.c file. 
-* slave.c is the function that control the slaves' actions. Receives multiple files and delegates individual files to it child for them to calculate md5 hashes.
+* app.c is the main process, it creates the slaves required in order to calculate all md5 hashes, it opens the shared memory required in order to communicate with the view.c file and it distributes the files to the slaves. 
+* slave.c is the process that control the slaves. It listens in his stdout for a file path, then it creates a child process which calculates the md5 hash of the file and then it sends the result to the app process using stdout. Both input and output are redirected to the app process using pipes.
 * view.c accesses the output of the application process in real time using the shared memory created by the app process
-* include folder includes app.h, shmAdt.h, slave.h, utils.h and view.h libraries to code app, slave, shmAdt, utils and view
-* utils folder includes functions of files and file descriptors manipulations.
+* include folder has the .h files for all the c files used, which have the function prototypes, the structs used, constants and the necesary includes.
+* utils folder includes utils functions for files and file descriptors manipulations, and the Shared Memory ADT.
 
 
 ## Requirements
-Programs have to be compiled and run using the following docker container:
+Programs should be compiled and run using the following docker container:
 ```
 user@linux:~$ docker pull agodio/itba-so:2.0
 user@linux:~$ cd ./path/to/SO_TP1
@@ -25,19 +47,33 @@ In order to compile the program, inside the docker container run:
 ```
 user@docker:~$ make
 ```
+
+### MakeFile
+The Makefile has the following options:
+* <code>make</code> compiles the program
+* <code>make debug</code> compiles the program with debug flags
+* <code>make clean</code> cleans the object files and the executable
+* <code>make files</code> creates the files used for testing
+* <code>make cleanFiles</code> cleans the files used for testing
+* <code>make valgrind</code> runs the program with valgrind
+* <code>make pvs</code> runs the program with pvs-studio
+* <code>make cleanpvs</code> cleans the pvs-studio files
+
 ## Execution Instructions
 There are 3 cases for executing the program
 
 ### Case 1
-If you want to just calculate the md5 hashes of files run:
+If you want to just calculate the md5 hashes of files and saved the output to a file run:
 ```
 user@docker:~$ ./md5 <files>
 ```
+
 ### Case 2
 If you want to view the process in real time run:
 ```
 user@docker:~$ ./md5 <files> | ./view
 ```
+
 ### Case 3
 If you want to have case 2 in two different terminals run:
 
@@ -45,12 +81,13 @@ If you want to have case 2 in two different terminals run:
 ```
 user@docker:~$ ./md5 <files>
 ```
-This program will output 2 names which *have to be used as arguments for vista* in the **same order** 
-they appear.
+This program will output the shared memory name which *has to be used as argument for the view*.
 
 #### Terminal 2
 ```
-user@docker:~$ ./view <name1> <name2>
+user@docker:~$ ./view <name1>
 ```
+
+
 ## Result
 The results are stored in <code>output.txt</code>
