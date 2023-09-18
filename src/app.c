@@ -30,7 +30,7 @@ int main(int argc, char * argv[], char * envp[]) {
 
     sleep(2); // Wait for view to appear
 
-    int outputFile = openFile("output.txt", O_CREAT|O_RDWR, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+    int outputFile = openFile("output.txt", O_CREAT|O_RDWR|O_TRUNC, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 
     int filesToSlaves = countFiles * 0.1;
     if (filesToSlaves == 0) filesToSlaves = 1;
