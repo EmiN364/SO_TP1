@@ -55,16 +55,27 @@ int main(int argc, char * argv[], char * envp[]) {
         int pid = createFork();
         if (pid == 0) {
             // Child
+
+            // Close fds of other slaves
+            for (int j = 0 ; j < i ; j++) {
+                close(slaves[j].readfd);
+                close(slaves[j].writefd);
+            }
+
+            // Redirect stdin and stdout to pipes
             close(STDIN_FILENO);
             dup(writefds[READ_END]); // read end of where app writes
             close(STDOUT_FILENO);
             dup(readfds[WRITE_END]); // write end of where app reads
+
             close(readfds[READ_END]);
             close(readfds[WRITE_END]);
             close(writefds[READ_END]);
             close(writefds[WRITE_END]);
 
             execl("slave", "slave", (char *) NULL);
+            perror("Error while creating slave");
+            exit(EXIT_FAILURE);
         } else {
             // Father
             close(writefds[READ_END]);
@@ -123,7 +134,7 @@ int main(int argc, char * argv[], char * envp[]) {
         }
     }
 
-    writeShm(shm, "", 0); // send signal to view, that app ended
+    writeShm(shm, "", 0); // Tell view that there is no more data to read
 
     for (int i = 0; i < slaveAmount; i++) {
         close(slaves[i].readfd);
@@ -132,6 +143,7 @@ int main(int argc, char * argv[], char * envp[]) {
 
     close(outputFile);
     closeShm(shm);
+    return 0;
 }
 
 int analyzeRead(char * buff, int len) {

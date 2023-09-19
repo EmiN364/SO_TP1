@@ -44,14 +44,14 @@ valgrind: all
 	valgrind ./md5 files/* | ./view
 
 files:
-	mkdir -p test;
+	mkdir -p files;
 	number=1 ; while [ "$$number" -le 60 ] ; do \
-        echo $$number > test/$$number ; \
+        echo $$number > files/$$number ; \
         number=`expr $$number + 1` ; \
     done
 
 cleanFiles:
-	rm -rf test
+	rm -rf files
 
 debug: CFLAGS=$(DEBUG_COMPILER)
 debug: all
