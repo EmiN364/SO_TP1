@@ -7,23 +7,15 @@ int main(int argc, char * argv[]) {
     // Disable buffering
     setvbuf(stdout, NULL, _IONBF, 0);
 
-    char shmName[SHM_NAME_SIZE];
-    if (argc > 1) {
-        strncpy(shmName, argv[1], SHM_NAME_SIZE - 1);
-    } else {
-        scanf("%9s", shmName);
-    }
-
-    shmAdt shm = connectShm(shmName);
+    int fifo = open("tpeFifo", O_RDONLY);
 
     char buff[SHM_BUFF_SIZE];
 
     while (TRUE) {
-        readShm(shm, buff);
+        read(fifo, buff, SHM_BUFF_SIZE - 1);
         if (buff[0] == '\0') break;
         printf("%s", buff);
     }
 
-    deleteShm(shm);
     return 0;
 }

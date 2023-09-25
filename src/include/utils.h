@@ -19,5 +19,6 @@ int rSelect(int nfds, fd_set *restrict readfds);
 ssize_t readFd(int fildes, void *buf, size_t nbyte);
 ssize_t writeFd(int fildes, const void *buf, size_t nbyte);
 int openFile(const char *pathname, int flags, mode_t mode);
+int createFifo(const char *pathname, mode_t mode);
 
 #endif

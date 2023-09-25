@@ -55,3 +55,12 @@ int openFile(const char *pathname, int flags, mode_t mode) {
     }
     return r;
 }
+
+int createFifo(const char *pathname, mode_t mode) {
+    int r = mkfifo(pathname, mode);
+    /* if (r < 0) {
+        perror("Error while creating fifo");
+        exit(EXIT_FAILURE);
+    } */
+    return r;
+}

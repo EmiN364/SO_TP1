@@ -20,11 +20,11 @@ slave: slave.o utils.o
 slave.o: src/slave.c
 	$(COMPILER) -I./src/include src/slave.c -c $(CFLAGS)
 
-view: view.o shmAdt.o
-	$(COMPILER) view.o shmAdt.o $(CFLAGS) -o $(OUTPUT_FILE_VIEW)
+view: view2.o shmAdt.o
+	$(COMPILER) view2.o shmAdt.o $(CFLAGS) -o $(OUTPUT_FILE_VIEW)
 
-view.o: src/view.c
-	$(COMPILER) -I./src/include src/view.c -c $(CFLAGS)
+view2.o: src/view2.c
+	$(COMPILER) -I./src/include src/view2.c -c $(CFLAGS)
 
 utils.o: src/utils/utils.c
 	$(COMPILER) -I./src/include src/utils/utils.c -c $(CFLAGS)

@@ -28,6 +28,8 @@ int main(int argc, char * argv[], char * envp[]) {
     shmAdt shm = newShm("shmTpe");
     puts("shmTpe");
 
+    createFifo("tpeFifo", 0666);
+
     sleep(2); // Wait for view to appear
 
     int outputFile = openFile("output.txt", O_CREAT|O_RDWR|O_TRUNC, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
